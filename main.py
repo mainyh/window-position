@@ -20,6 +20,8 @@ import win32con
 import win32gui
 import win32process
 
+from icon_data import ICON_PNG_BASE64
+
 
 APP_NAME = "Window Position"
 FONT = "Segoe UI"
@@ -76,12 +78,7 @@ class WindowPositionApp:
         self.root = root
         self.root_hwnd = int(root.winfo_id())
         self.root.title(APP_NAME)
-        try:
-            icon = str(resource_path("icon.ico"))
-            self.root.iconbitmap(icon)
-            self.root.iconbitmap(default=icon)
-        except tk.TclError:
-            pass
+        self.set_app_icon()
         self.root.protocol("WM_DELETE_WINDOW", self.quit)
         self.slots: dict[str, dict] = self.load_slots()
         self.buttons: list[ttk.Button] = []
@@ -100,6 +97,19 @@ class WindowPositionApp:
         self.root.minsize(width, height)
         self.root.after(100, self.register_hotkeys)
         self.root.after(150, self.poll_hotkeys)
+
+    def set_app_icon(self) -> None:
+        # The embedded PNG is the reliable path: it needs no bundled file, so the
+        # window and taskbar never fall back to Tk's default feather icon.
+        try:
+            self.icon_image = tk.PhotoImage(data=ICON_PNG_BASE64)
+            self.root.iconphoto(True, self.icon_image)
+        except tk.TclError:
+            pass
+        try:
+            self.root.iconbitmap(str(resource_path("icon.ico")))
+        except tk.TclError:
+            pass
 
     def _setup_styles(self) -> None:
         style = ttk.Style(self.root)
