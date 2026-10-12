@@ -6,6 +6,9 @@ on:
       - "v*"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -20,3 +23,10 @@ jobs:
         with:
           name: WindowPosition-windows
           path: dist/WindowPosition.exe
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Window Position ${{ github.ref_name }}
+          files: dist/WindowPosition.exe
+          generate_release_notes: true
